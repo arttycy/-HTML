@@ -9,7 +9,7 @@
     .page-container { background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
     .hidden { display: none; }
     input, select, textarea, button { width: 100%; padding: 10px; margin: 6px 0; box-sizing: border-box; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; transition: border-color 0.3s; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;}
-    #birthday { font-size: 14px; }
+    #birthday { font-size: 12px; }
     input:focus, select:focus, textarea:focus { border-color: #007bff; outline: none; box-shadow: 0 0 0 2px rgba(0,123,255,0.25); }
     input:invalid { border-color: #dc3545; }
     label { display: block; text-align: left; font-weight: bold; margin-top: 15px; }
@@ -20,18 +20,20 @@
     .hint { display: block; text-align: left; font-size: 12px; color: #6c757d; margin-top: 2px; margin-bottom: 10px; }
     /* 选中包含月份和年份的整个区域 */
 .flatpickr-months {
-    font-size: 10px;   /* <--- 在这里整体调整字号为你想要的大小 */
-    font-weight: normal;  /* 可以调整字重，比如 normal (普通) 或 600 (稍粗) */
+    font-size: 10px;   /* <--- 整体调整字号 */
+    font-weight: normal;  /* 调整字重，比如 normal (普通) 或 600 (稍粗) */
     color: #333;       /* 调整文字颜色 */
 }
     #city::placeholder,
     #question::placeholder {
         font-family: sans-serif;     /* 1. 统一字体 */
-        font-size: 14px;             /* 2. 统一字号 (和你的输入框字号一致) */
+        font-size: 14px;             /* 2. 统一字号 (和输入框字号一致) */
         color: #aaa;                  /* 3. 统一颜色 (比输入的文字颜色浅一些) */
+    }
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     </head>
 <body>
 
@@ -66,7 +68,7 @@
             <span class="hint">用于占卜时考虑时区和经纬度</span>
 
             <label for="question">你想要占卜的问题:</label>
-            <textarea id="question" placeholder="例如：我未来的事业发展如何？" rows="4" required minlength="5" maxlength="200"></textarea>
+            <textarea id="question" placeholder="例如：帮我占卜一下事业运势吧。" rows="4" required minlength="5" maxlength="200"></textarea>
             <span class="hint">请输入您想占卜的问题 (<span id="char-count">0</span>/200 字符)</span>
 
             <button type="submit" id="divine-btn">开始占卜</button>
@@ -209,28 +211,19 @@
             countElement.style.color = '#6c757d';
         }
     });
-    // ==================== 请在这里填写你的个人信息 ====================
 
-// 1. 你的个人访问令牌 (Personal Access Token)，请从扣子平台复制
+// 1. Personal Access Token
 // 格式必须是 "Bearer pat_xxxxxxxxxxxxxxxxxxxxx"
 const YOUR_ACCESS_TOKEN = 'Bearer pat_rdPwiBjIZnQvX7SPAenb7hSqnU3uoRQhiQY4N0CLBOHcN44q8pwmJLiTszCMex6i';
 
-// 2. 你要运行的工作流 ID (Workflow ID)
+// 2. Workflow ID
 const YOUR_WORKFLOW_ID = '7546186762025156648'; // 替换成你的 Workflow ID
-
-// 3. (可选) 如果需要，填写关联的智能体 ID (Bot ID)
-const YOUR_BOT_ID = '7538766659939909658'; // 如果不需要，可以把这行删掉或留空
-
-// =================================================================
-
 
 // 调用 Agent API 进行占卜
 async function performDivination(userData) {
     showPage(resultPage);
     resultDisplay.innerText = '正在为你连接星辰，解读牌阵，请稍候...';
-
     // ---- 根据 Coze API 文档构建请求 ----
-
     // 1. 构建请求头 (Headers)
     const headers = {
         'Authorization': YOUR_ACCESS_TOKEN,
@@ -240,25 +233,15 @@ async function performDivination(userData) {
     // 2. 构建请求体 (Body)
     const body = {
         workflow_id: YOUR_WORKFLOW_ID,
-        // 【重要】这里的 parameters 对象的键 (key)，必须和你工作流“开始”节点里定义的输入参数名完全一致
-        // 例如，如果你的开始节点有 birthday, gender, city, question 四个参数，这里就照此填写
         parameters: {
             birthday: userData.birthday,
             gender: userData.gender,
             city: userData.city,
             question: userData.question
         },
-        // 如果你的工作流需要关联智能体，就保留 bot_id
-        bot_id: YOUR_BOT_ID, 
         // Coze API 要求有一个 user_id 来区分用户
         user_id: userData.name || 'default_user' 
     };
-    
-    // 如果不需要 bot_id，可以从 body 中删除它
-    if (!YOUR_BOT_ID) {
-        delete body.bot_id;
-    }
-
 
     // 3. 使用 fetch 发送网络请求
     try {
@@ -274,14 +257,10 @@ async function performDivination(userData) {
 
         const result = await response.json();
         console.log('从 Coze API 收到的完整响应:', result);
-
         if (result.code !== 0) {
             throw new Error(`API 错误: ${result.msg}`);
         }
-
-        // --- 这是处理结果的正确逻辑 ---
-        const workflowResult = result.data; // 关键修正：从 result.data 获取数据
-
+        const workflowResult = result.data; // 从 result.data 获取数据
         let finalAnswer = '';
         try {
             const parsedData = JSON.parse(workflowResult);
@@ -294,8 +273,6 @@ async function performDivination(userData) {
             finalAnswer = '工作流执行成功，但未能返回有效结果。';
         }
         
-        // --- 正确逻辑结束 ---
-
         console.log('工作流执行成功!', result);
         console.log('调试链接:', result.debug_url);
 
@@ -303,7 +280,6 @@ async function performDivination(userData) {
         console.error('占卜时出错:', error);
         resultDisplay.innerText = `出现了一个错误：\n${error.message}\n请检查令牌和网络后重试。`;
     }
-// 【替换到这里结束】
 }
     // --- 初始化 ---
     // 页面加载时，首先检查登录状态
