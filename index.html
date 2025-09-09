@@ -272,7 +272,7 @@ async function performDivination(userData) {
         if (!finalAnswer) {
             finalAnswer = '工作流执行成功，但未能返回有效结果。';
         }
-        
+        resultDisplay.innerHTML = marked.parse(finalAnswer);
         console.log('工作流执行成功!', result);
         console.log('调试链接:', result.debug_url);
 
@@ -287,4 +287,5 @@ async function performDivination(userData) {
 
 </script>
     </body>
+
 </html>
