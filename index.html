@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>塔罗占卜 Demo</title>
+<style>
+    body { font-family: sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    .page-container { background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
+    .hidden { display: none; }
+    input, select, textarea, button { width: 100%; padding: 10px; margin: 6px 0; box-sizing: border-box; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; transition: border-color 0.3s; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;}
+    #birthday { font-size: 14px; }
+    input:focus, select:focus, textarea:focus { border-color: #007bff; outline: none; box-shadow: 0 0 0 2px rgba(0,123,255,0.25); }
+    input:invalid { border-color: #dc3545; }
+    label { display: block; text-align: left; font-weight: bold; margin-top: 15px; }
+    button { background-color: #007bff; color: white; cursor: pointer; border: none; }
+    button:hover { background-color: #0056b3; }
+    #logout-btn { background-color: #6c757d; margin-top: 15px; }
+    .result-display { min-height: 200px; max-height: 400px; text-align: left; white-space: pre-wrap; background-color: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px; overflow-y: auto; line-height: 1.6; }
+    .hint { display: block; text-align: left; font-size: 12px; color: #6c757d; margin-top: 2px; margin-bottom: 10px; }
+    /* 选中包含月份和年份的整个区域 */
+.flatpickr-months {
+    font-size: 10px;   /* <--- 在这里整体调整字号为你想要的大小 */
+    font-weight: normal;  /* 可以调整字重，比如 normal (普通) 或 600 (稍粗) */
+    color: #333;       /* 调整文字颜色 */
+}
+    #city::placeholder,
+    #question::placeholder {
+        font-family: sans-serif;     /* 1. 统一字体 */
+        font-size: 14px;             /* 2. 统一字号 (和你的输入框字号一致) */
+        color: #aaa;                  /* 3. 统一颜色 (比输入的文字颜色浅一些) */
+</style>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    </head>
+<body>
+
+    <div id="login-page" class="page-container">
+        <h1>欢迎来到塔罗小屋</h1>
+        <p>请输入你的昵称开始</p>
+        <input type="text" id="name-input" placeholder="输入你的昵称">
+        <button id="login-btn">进入</button>
+    </div>
+
+    <div id="input-page" class="page-container hidden">
+        <h2 id="welcome-message">你好！</h2>
+        <p>请填写你的信息，让占卜更准确</p>
+        <form id="tarot-form">
+            <label for="birthday">你的生日:</label>
+            <div style="display: flex; gap: 8px;">
+                <input type="text" id="birthday" placeholder="请选择你的生日..." required style="flex: 1;">
+                <button type="button" id="clear-birthday" style="width: auto; padding: 12px;">清除</button>
+            </div>
+            <span class="hint">请选择您的出生日期(格式: YYYY-MM-DD)</span>
+
+            <label for="gender">你的性别:</label>
+            <select id="gender" required>
+                <option value="">请选择...</option>
+                <option value="男">男</option>
+                <option value="女">女</option>
+                <option value="其他">其他</option>
+            </select>
+
+            <label for="city">出生城市:</label>
+            <input type="text" id="city" placeholder="请输入您的出生城市，例如：北京、上海" required>
+            <span class="hint">用于占卜时考虑时区和经纬度</span>
+
+            <label for="question">你想要占卜的问题:</label>
+            <textarea id="question" placeholder="例如：我未来的事业发展如何？" rows="4" required minlength="5" maxlength="200"></textarea>
+            <span class="hint">请输入您想占卜的问题 (<span id="char-count">0</span>/200 字符)</span>
+
+            <button type="submit" id="divine-btn">开始占卜</button>
+        </form>
+        <button id="logout-btn">退出登录</button>
+    </div>
+
+    <div id="result-page" class="page-container hidden">
+        <h1>占卜结果</h1>
+        <div id="result-display" class="result-display">
+            正在为你解读牌阵，请稍候...
+        </div>
+        <button id="back-btn">返回再问一次</button>
+    </div>
+<script>
+    // --- 元素获取 ---
+    const loginPage = document.getElementById('login-page');
+    const inputPage = document.getElementById('input-page');
+    const resultPage = document.getElementById('result-page');
+    // 登录页元素
+    const nameInput = document.getElementById('name-input');
+    const loginBtn = document.getElementById('login-btn');
+    // 输入页元素
+    const welcomeMessage = document.getElementById('welcome-message');
+    const tarotForm = document.getElementById('tarot-form');
+    const birthdayInput = document.getElementById('birthday');
+    const genderSelect = document.getElementById('gender');
+    const cityInput = document.getElementById('city');
+    const questionTextarea = document.getElementById('question');
+    const logoutBtn = document.getElementById('logout-btn');
+    // 结果页元素
+    const resultDisplay = document.getElementById('result-display');
+    const backBtn = document.getElementById('back-btn');
+
+    // --- 页面切换逻辑 ---
+    function showPage(page) {
+        loginPage.classList.add('hidden');
+        inputPage.classList.add('hidden');
+        resultPage.classList.add('hidden');
+        page.classList.remove('hidden');
+    }
+
+    // --- 核心功能函数 ---
+    // 检查登录状态
+    function checkLogin() {
+        const name = localStorage.getItem('tarotUserName');
+        if (name) {
+            welcomeMessage.innerText = `你好，${name}！`;
+            showPage(inputPage);
+        } else {
+            showPage(loginPage);
+        }
+    }
+    // 初始化生日选择器
+    flatpickr("#birthday", {
+        dateFormat: "Y-m-d",
+        maxDate: "today",
+        defaultDate: "1990-01-01",
+        allowInput: false,
+        locale: {
+            weekdays: {
+                shorthand: ['周日', '周一', '周二', '周三', '周四', '周五', '周六'],
+                longhand: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+            },
+            months: {
+                shorthand: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'],
+                longhand: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
+            },
+            firstDayOfWeek: 1,
+            rangeSeparator: ' 至 ',
+            weekAbbreviation: '周',
+            scrollTitle: '滚动切换',
+            toggleTitle: '点击切换 12/24 小时时制'
+        }
+    });
+    
+    // 登录
+    loginBtn.addEventListener('click', () => {
+        const name = nameInput.value.trim();
+        if (name) {
+            localStorage.setItem('tarotUserName', name);
+            checkLogin();
+        } else {
+            alert('昵称不能为空！');
+        }
+    });
+
+    // 退出登录
+    logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('tarotUserName');
+        checkLogin();
+    });
+    
+    // 设置生日输入的最大日期为今天
+    const today = new Date().toISOString().split('T')[0];
+    birthdayInput.max = today;
+    
+    // 清除生日按钮事件
+    document.getElementById('clear-birthday').addEventListener('click', () => {
+        birthdayInput._flatpickr.clear();
+    });
+    
+    // 提交占卜信息
+    tarotForm.addEventListener('submit', (event) => {
+        event.preventDefault(); // 阻止表单默认提交行为
+        
+        // 验证生日日期不能超过今天
+        if (birthdayInput.value > today) {
+            alert('生日不能超过今天！');
+            return;
+        }
+        
+        const userData = {
+            name: localStorage.getItem('tarotUserName'),
+            birthday: birthdayInput.value,
+            gender: genderSelect.value,
+            city: cityInput.value,
+            question: questionTextarea.value
+        };
+        performDivination(userData);
+    });
+
+    // 返回按钮
+    backBtn.addEventListener('click', () => {
+        showPage(inputPage);
+    });
+    
+    // 问题输入框字符计数
+    questionTextarea.addEventListener('input', () => {
+        const charCount = questionTextarea.value.length;
+        document.getElementById('char-count').textContent = charCount;
+        
+        // 当字符数接近限制时改变颜色
+        const countElement = document.getElementById('char-count');
+        if (charCount > 180) {
+            countElement.style.color = '#dc3545';
+        } else if (charCount > 150) {
+            countElement.style.color = '#ffc107';
+        } else {
+            countElement.style.color = '#6c757d';
+        }
+    });
+    // ==================== 请在这里填写你的个人信息 ====================
+
+// 1. 你的个人访问令牌 (Personal Access Token)，请从扣子平台复制
+// 格式必须是 "Bearer pat_xxxxxxxxxxxxxxxxxxxxx"
+const YOUR_ACCESS_TOKEN = 'Bearer pat_rdPwiBjIZnQvX7SPAenb7hSqnU3uoRQhiQY4N0CLBOHcN44q8pwmJLiTszCMex6i';
+
+// 2. 你要运行的工作流 ID (Workflow ID)
+const YOUR_WORKFLOW_ID = '7546186762025156648'; // 替换成你的 Workflow ID
+
+// 3. (可选) 如果需要，填写关联的智能体 ID (Bot ID)
+const YOUR_BOT_ID = '7538766659939909658'; // 如果不需要，可以把这行删掉或留空
+
+// =================================================================
+
+
+// 调用 Agent API 进行占卜
+async function performDivination(userData) {
+    showPage(resultPage);
+    resultDisplay.innerText = '正在为你连接星辰，解读牌阵，请稍候...';
+
+    // ---- 根据 Coze API 文档构建请求 ----
+
+    // 1. 构建请求头 (Headers)
+    const headers = {
+        'Authorization': YOUR_ACCESS_TOKEN,
+        'Content-Type': 'application/json'
+    };
+
+    // 2. 构建请求体 (Body)
+    const body = {
+        workflow_id: YOUR_WORKFLOW_ID,
+        // 【重要】这里的 parameters 对象的键 (key)，必须和你工作流“开始”节点里定义的输入参数名完全一致
+        // 例如，如果你的开始节点有 birthday, gender, city, question 四个参数，这里就照此填写
+        parameters: {
+            birthday: userData.birthday,
+            gender: userData.gender,
+            city: userData.city,
+            question: userData.question
+        },
+        // 如果你的工作流需要关联智能体，就保留 bot_id
+        bot_id: YOUR_BOT_ID, 
+        // Coze API 要求有一个 user_id 来区分用户
+        user_id: userData.name || 'default_user' 
+    };
+    
+    // 如果不需要 bot_id，可以从 body 中删除它
+    if (!YOUR_BOT_ID) {
+        delete body.bot_id;
+    }
+
+
+    // 3. 使用 fetch 发送网络请求
+    try {
+        const response = await fetch('https://api.coze.cn/v1/workflow/run', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            throw new Error(`网络请求失败: ${response.status} ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        console.log('从 Coze API 收到的完整响应:', result);
+
+        if (result.code !== 0) {
+            throw new Error(`API 错误: ${result.msg}`);
+        }
+
+        // --- 这是处理结果的正确逻辑 ---
+        const workflowResult = result.data; // 关键修正：从 result.data 获取数据
+
+        let finalAnswer = '';
+        try {
+            const parsedData = JSON.parse(workflowResult);
+            finalAnswer = parsedData.output; // 从解包后的数据里获取 output
+        } catch (e) {
+            finalAnswer = workflowResult;
+        }
+
+        if (!finalAnswer) {
+            finalAnswer = '工作流执行成功，但未能返回有效结果。';
+        }
+        
+        // --- 正确逻辑结束 ---
+
+        console.log('工作流执行成功!', result);
+        console.log('调试链接:', result.debug_url);
+
+    } catch (error) {
+        console.error('占卜时出错:', error);
+        resultDisplay.innerText = `出现了一个错误：\n${error.message}\n请检查令牌和网络后重试。`;
+    }
+// 【替换到这里结束】
+}
+    // --- 初始化 ---
+    // 页面加载时，首先检查登录状态
+    checkLogin();
+
+</script>
+    </body>
+</html>
