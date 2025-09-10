@@ -5,7 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>塔罗占卜 Demo</title>
 <style>
-    body { font-family: sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+    body {
+    font-family: sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* 将垂直居中对齐，改为“顶部对齐” */
+    min-height: 100vh;     /* 将 height 改为 min-height，允许内容撑开页面 */
+    margin: 0;
+    padding: 40px 0;         /* 增加一些上下边距，让长页面顶部和底部不贴边 */
+    box-sizing: border-box;  /* 确保 padding 不会影响总高度计算 */
+}
     .page-container { background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
     .hidden { display: none; }
     input, select, textarea, button { width: 100%; padding: 10px; margin: 6px 0; box-sizing: border-box; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; transition: border-color 0.3s; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;}
@@ -29,6 +39,117 @@
         font-family: sans-serif;     /* 1. 统一字体 */
         font-size: 14px;             /* 2. 统一字号 (和输入框字号一致) */
         color: #aaa;                  /* 3. 统一颜色 (比输入的文字颜色浅一些) */
+    }
+        /* --- 新增的三模块布局样式 --- */
+    .module {
+        margin-bottom: 25px;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+        text-align: left;
+    }
+    .module h2 {
+        text-align: center;
+        font-size: 1.4em;
+        color: #333;
+        margin-top: 0;
+        margin-bottom: 20px;
+    }
+    .card-container {
+        display: flex;
+        justify-content: space-around;
+        gap: 10px;
+        flex-wrap: wrap; /* 移动端换行 */
+    }
+    .tarot-card-item {
+        text-align: center;
+        flex-basis: 100px; /* 每个卡牌的基础宽度 */
+    }
+    .tarot-card-image {
+        width: 90px;
+        height: auto;
+        border-radius: 6px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        transition: transform 0.3s;
+    }
+    .tarot-card-image:hover {
+        transform: scale(1.05) translateY(-5px);
+    }
+    .tarot-card-item p {
+        font-size: 13px;
+        margin-top: 8px;
+        font-weight: 500;
+        color: #555;
+    }
+    .card-interpretation {
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .card-interpretation:last-child {
+        border-bottom: none;
+    }
+    .summary-section h4 {
+        color: #1a2a4e;
+    }
+    /* --- 解决结果内容显示不全的问题 --- */
+    /* #interpretation-area,
+    #summary-area {
+    max-height: 400px; /* 设置一个最大高度，例如400像素 */
+    /* overflow-y: auto;  当内容超出高度时，显示垂直滚动条 */
+    /* padding-right: 15px; 增加一点右内边距，防止滚动条压住文字 */
+    /* } */ 
+    #result-page {
+    max-height: 85vh;  /* 设置结果页卡片的最大高度为视窗高度的85%  */
+    overflow-y: auto;   /* 当内容超出时，卡片内部出现垂直滚动条 */
+    padding-right: 15px; /* (可选) 增加右内边距，防止滚动条压住文字*/
+    font-size: 15px; /* 设置结果页面的基础字体大小 */
+    line-height: 1.6; /* 增加行高，提高可读性 */
+}
+
+    /* --- 卡牌文字和标签样式优化 --- */
+
+    /* 调整卡牌名字的样式 */
+    .tarot-card-item .card-name-display {
+        font-size: 15px; /* 牌名稍大一点 */
+        font-weight: 600; /* 牌名加粗 */
+        color: #333; /* 更深的颜色 */
+        margin-top: 10px; /* 牌名和图片之间多一些空间 */
+        margin-bottom: 5px; /* 牌名和标签之间留空间 */
+        line-height: 1.3;
+    }
+
+    /* 卡牌类型标签的基础样式 */
+    .card-type-tag {
+        display: inline-block; /* 让标签像一个块级元素一样，可以设置padding */
+        padding: 4px 10px; /* 增加内边距 */
+        border-radius: 6px; /* 增加圆角 */
+        font-size: 13px; /* 增加标签字体大小 */
+        font-weight: 500; /* 标签字体粗细 */
+        line-height: 1; /* 行高，确保文字居中 */
+        color: #fff; /* 文字颜色为白色 */
+        margin-top: 5px; /* 与牌名之间的间距 */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 增强阴影效果，增加立体感 */
+    }
+
+    /* 正位标签的特定颜色 */
+    .card-type-positive {
+        background-color: #E8F5E9; /* 这是一个非常柔和的淡绿色 */
+        color: #388E3C;           /* 这是与之搭配的、更深一点的绿色文字，确保清晰可读 */
+    }
+
+    /* 逆位标签的特定颜色 */
+    .card-type-negative {
+        /*background-color: #F44336; 红色 */
+        background-color: #FFEBEE; /* 这是一个非常柔和的淡红色/粉色 */
+        color: #D32F2F;           /* 这是与之搭配的、更深一点的红色文字，确保清晰可读 */
+    }
+
+    /* 调整卡牌整体的间距，防止标签被挤压 */
+    .tarot-card-item {
+        text-align: center;
+        flex-basis: 100px; /* 每个卡牌的基础宽度 */
+        min-width: 90px;   /* 确保在小屏幕下也有最小宽度 */
+        padding: 5px;      /* 增加一点内边距，避免内容过于贴边 */
     }
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
@@ -77,12 +198,29 @@
     </div>
 
     <div id="result-page" class="page-container hidden">
-        <h1>占卜结果</h1>
-        <div id="result-display" class="result-display">
-            正在为你解读牌阵，请稍候...
-        </div>
-        <button id="back-btn">返回再问一次</button>
+    <h1>占卜结果</h1>
+    <div id="module-cards" class="module">
+        <h2>你抽到的牌</h2>
+        <div id="card-display-area" class="card-container">
+            </div>
     </div>
+
+    <div id="module-interpretations" class="module">
+        <h2>牌面解读</h2>
+        <div id="interpretation-area">
+            </div>
+    </div>
+
+    <div id="module-summary" class="module">
+        <h2>综合分析与建议</h2>
+        <div id="summary-area">
+            </div>
+    </div>
+
+    <button id="back-btn">返回再问一次</button>
+</div>
+
+<script src="config.js"></script>
 <script>
     // --- 元素获取 ---
     const loginPage = document.getElementById('login-page');
@@ -212,14 +350,114 @@
         }
     });
 
-// 1. Personal Access Token
-// 格式必须是 "Bearer pat_xxxxxxxxxxxxxxxxxxxxx"
-const YOUR_ACCESS_TOKEN = 'Bearer pat_rdPwiBjIZnQvX7SPAenb7hSqnU3uoRQhiQY4N0CLBOHcN44q8pwmJLiTszCMex6i';
-
-// 2. Workflow ID
-const YOUR_WORKFLOW_ID = '7546186762025156648'; // 替换成你的 Workflow ID
 
 // 调用 Agent API 进行占卜
+// ▼▼▼ 替换旧的 performDivination 函数 ▼▼▼
+async function performDivination(userData) {
+    showPage(resultPage);
+    // 清空上一次的结果，并显示加载状态
+    document.getElementById('card-display-area').innerHTML = '';
+    document.getElementById('interpretation-area').innerHTML = '<p>正在为你连接星辰，解读牌阵，请稍候...</p>';
+    document.getElementById('summary-area').innerHTML = '';
+
+    const headers = {
+        'Authorization': YOUR_ACCESS_TOKEN,
+        'Content-Type': 'application/json'
+    };
+    const body = {
+        workflow_id: YOUR_WORKFLOW_ID,
+        parameters: {
+            birthday: userData.birthday,
+            gender: userData.gender,
+            city: userData.city,
+            question: userData.question
+        },
+        user_id: userData.name || 'default_user'
+    };
+    // ... (你已有的构建 body 的代码保持不变)
+
+    try {
+        const response = await fetch('https://api.coze.cn/v1/workflow/run', {
+            method: 'POST',
+            headers: headers,
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) throw new Error(`网络请求失败: ${response.status}`);
+
+        const result = await response.json();
+        console.log('从 Coze API 收到的完整响应:', result);
+
+        if (result.code !== 0) throw new Error(`API 错误: ${result.msg}`);
+
+        // --- 全新渲染逻辑 ---
+        
+        // 1. 清理并解析最终的 JSON 数据
+        // Coze 返回的 output 是一个包含 ```json ... ``` 的字符串
+        let jsonString = JSON.parse(result.data).output;
+        // 移除 Markdown 的代码块标记
+        jsonString = jsonString.replace(/^```json\n/, '').replace(/\n```$/, '');
+        const finalData = JSON.parse(jsonString);
+        console.log('最终用于渲染页面的结构化数据:', finalData);
+
+        // 2. 渲染模块一：抽取的卡牌
+        /* const cardArea = document.getElementById('card-display-area');
+        cardArea.innerHTML = finalData.drawn_cards.map(card => `
+            <div class="tarot-card-item">
+                <img src="${card.image_url}" alt="${card.name} - ${card.type}" class="tarot-card-image">
+                <p>${card.type}的<br>${card.name}</p>
+            </div>
+        `).join('');
+        */
+        const cardArea = document.getElementById('card-display-area');
+        cardArea.innerHTML = finalData.drawn_cards.map(card => {
+            // 根据牌的类型决定标签的颜色
+            const typeClass = card.type === '正位' ? 'card-type-positive' : 'card-type-negative';
+            // 完整的牌名，不包含正逆位（因为正逆位会单独做成标签）
+            const cardNameOnly = card.name; 
+
+            return `
+                <div class="tarot-card-item">
+                    <img src="${card.image_url}" alt="${card.type}的${cardNameOnly}" class="tarot-card-image">
+                    <p class="card-name-display">${cardNameOnly}</p>
+                    <span class="card-type-tag ${typeClass}">${card.type}</span>
+                </div>
+            `;
+        }).join('');
+
+        // 3. 渲染模块二：卡牌解读
+        const interpretationArea = document.getElementById('interpretation-area');
+        interpretationArea.innerHTML = finalData.interpretations.map(interp => `
+            <div class="card-interpretation">
+                <h4>🃏 ${interp.type}的${interp.card_name}</h4>
+                <p><strong>💡 牌面含义:</strong> ${interp.meaning}</p>
+                <p><strong>📋 结合星盘分析:</strong> ${interp.analysis}</p>
+            </div>
+        `).join('');
+
+        // 4. 渲染模块三：综合分析与建议
+        const summaryArea = document.getElementById('summary-area');
+        summaryArea.innerHTML = `
+            <div class="summary-section">
+                <h4>星盘综合提示</h4>
+                <p style="font-size: 14px; line-height: 1.6;">${finalData.summary.star_chart_analysis}</p>
+                <h4>整体分析</h4>
+                <p style="font-size: 14px; line-height: 1.6;">${finalData.summary.comprehensive_analysis}</p>
+                <h4>给你的建议</h4>
+                <p style="font-size: 14px; line-height: 1.6;">${finalData.summary.suggestions.replaceAll('\n', '<br>')}</p> 
+            </div>
+        `;
+
+        console.log('工作流执行成功!', result);
+        console.log('调试链接:', result.debug_url);
+
+    } catch (error) {
+        console.error('占卜时出错:', error);
+        // 如果出错，只在解读区显示错误信息
+        document.getElementById('interpretation-area').innerHTML = `<p>出现了一个错误：<br>${error.message}<br>请检查令牌和网络后重试。</p>`;
+    }
+}
+/*
 async function performDivination(userData) {
     showPage(resultPage);
     resultDisplay.innerText = '正在为你连接星辰，解读牌阵，请稍候...';
@@ -281,11 +519,12 @@ async function performDivination(userData) {
         resultDisplay.innerText = `出现了一个错误：\n${error.message}\n请检查令牌和网络后重试。`;
     }
 }
+*/
+
     // --- 初始化 ---
     // 页面加载时，首先检查登录状态
     checkLogin();
 
 </script>
     </body>
-
 </html>
