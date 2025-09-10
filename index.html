@@ -7,7 +7,7 @@
 <style>
     body {
     font-family: sans-serif;
-    background-color: #f0f2f5;
+    background-color: #9a9ad9;
     display: flex;
     justify-content: center;
     align-items: flex-start; /* 将垂直居中对齐，改为“顶部对齐” */
@@ -15,6 +15,32 @@
     margin: 0;
     padding: 40px 0;         /* 增加一些上下边距，让长页面顶部和底部不贴边 */
     box-sizing: border-box;  /* 确保 padding 不会影响总高度计算 */
+}
+body {
+    /* ... 其他样式 ... */
+    background-image: url('images/background_pic.jpg');
+    background-size: cover;       /* 确保背景图片覆盖整个视口 */
+    background-position: center;  /* 图片居中显示 */
+    background-repeat: no-repeat; /* 不重复平铺 */
+    background-attachment: fixed; /* 背景固定，不随页面滚动 */
+    
+    /* 为了确保图片加载前有背景色，或者图片加载失败时有兜底 */
+    background-color: #333; /* 推荐设置一个与图片色调相近的纯色作为兜底 */
+}
+body {
+    /* ... 上面设置的背景图片样式 ... */
+    position: relative; /* 允许在其上叠加伪元素 */
+    z-index: 1;         /* 确保其他内容在背景之上 */
+}
+body::before { /* 创建一个伪元素作为半透明蒙版 */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(222, 223, 219, 0.4); /* 黑色半透明蒙版，0.4是透明度，可调 */
+    z-index: -1; /* 确保蒙版在内容之下，但在背景图片之上 */
 }
     .page-container { background-color: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
     .hidden { display: none; }
@@ -47,13 +73,14 @@
         padding-top: 20px;
         text-align: left;
     }
-    .module h2 {
+    /* .module h2 {
         text-align: center;
         font-size: 1.4em;
         color: #333;
         margin-top: 0;
         margin-bottom: 20px;
-    }
+    } */
+    
     .card-container {
         display: flex;
         justify-content: space-around;
@@ -92,12 +119,6 @@
         color: #1a2a4e;
     }
     /* --- 解决结果内容显示不全的问题 --- */
-    /* #interpretation-area,
-    #summary-area {
-    max-height: 400px; /* 设置一个最大高度，例如400像素 */
-    /* overflow-y: auto;  当内容超出高度时，显示垂直滚动条 */
-    /* padding-right: 15px; 增加一点右内边距，防止滚动条压住文字 */
-    /* } */ 
     #result-page {
     max-height: 85vh;  /* 设置结果页卡片的最大高度为视窗高度的85%  */
     overflow-y: auto;   /* 当内容超出时，卡片内部出现垂直滚动条 */
@@ -151,6 +172,119 @@
         min-width: 90px;   /* 确保在小屏幕下也有最小宽度 */
         padding: 5px;      /* 增加一点内边距，避免内容过于贴边 */
     }
+    /* --- 全新黄色/土黄色主题 --- */
+
+    /* 1. 主要按钮和交互元素的颜色 */
+    button,
+    #login-btn,
+    #divine-btn {
+        background-color: #ff9500; /* 定义主题色为：黄色 */
+        transition: background-color 0.3s;
+        font-weight: 600; /* 让按钮文字稍粗一点，更有质感 */
+    }
+    button:hover,
+    #login-btn:hover,
+    #divine-btn:hover {
+        background-color: #A0740A; /* 鼠标悬停时颜色加深 */
+    }
+    /* 其他特殊按钮可以保持灰色 */
+    #logout-btn { background-color: #b8bdc0; }
+    #clear-birthday {
+        background-color: #ff9500; /* 和“退出登录”按钮颜色一致，作为默认色 */
+        color: white;
+        cursor: pointer;
+        border: none;
+        transition: background-color 0.2s, transform 0.1s; /* 增加过渡效果，让变化更平滑 */
+    }
+    #clear-birthday:active {
+    background-color: #5a6268;   /* 这是按下时才会变成的深灰色 */
+}
+
+    /* 2. 输入框聚焦时的辉光效果 */
+    input:focus, select:focus, textarea:focus {
+        border-color: #B8860B; /* 边框也使用主题色 */
+        box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.25); /* 土黄色的辉光 */
+    }
+
+    /* 3. (可选) 优化卡片和标题颜色以匹配主题 */
+    .page-container {
+        background-color: #FAF9F6; /* 使用一个更柔和的米白色代替纯白，更有羊皮纸的感觉 */
+        border: 1px solid #EAE0B2; /* 给卡片一个淡淡的金色边框 */
+    }
+
+    h1, h2 {
+        color: #5C523A; /* 深橄榄/棕色标题，比纯黑更柔和 */
+    }
+
+    /* --- 建议模块的卡片式布局样式 --- */
+    .suggestions-container {
+        display: flex;
+        flex-direction: column; /* 垂直排列卡片 */
+        gap: 15px; /* 卡片之间的间距 */
+    }
+
+    .suggestion-card {
+        display: flex;
+        align-items: flex-start; /* 图标和文字顶部对齐 */
+        background-color: #FFFFFF;
+        padding: 15px 20px;
+        /* 【圆角】 你可以调整这个值，比如 12px 会更圆滑 */
+        border-radius: 12px; 
+    
+    /* 【框线】 添加一个完整、柔和的灰色边框 */
+        border: 1px solid #EAE0B2; /* 使用一个和主题色协调的淡金色边框 */
+        transition: box-shadow 0.3s, border-color 0.3s;
+
+    }
+    .suggestion-card:hover {
+        box-shadow: 0 4px 12px rgb(251, 232, 198);
+    }
+
+    .suggestion-icon {
+        font-size: 1.5em; /* 图标大小 */
+        margin-right: 15px;
+        line-height: 1.4; /* 调整行高让图标和文字更对齐 */
+    }
+
+    .suggestion-text {
+        font-size: 14px;
+        line-height: 1.7;
+        color: #333;
+    }
+    /* --- 为 H2 标题添加左右对称的装饰符号 --- */
+
+/* 第一步：修改 h2 自身的样式 */
+    h2 {
+        /* 将标题自身变为 Flex 容器 */
+        display: flex;
+        justify-content: center; /* 水平居中所有子项目 */
+        align-items: center;     /* 垂直居中所有子项目 */
+        
+        /* 原有的样式可以保留或微调 */
+        width: 100%;             /* 确保 h2 撑满容器宽度以便正确居中 */
+        font-size: 1.5em;
+        font-weight: 600;
+        color: #483D8B;
+        margin-top: 0;
+        margin-bottom: 25px;
+        border-bottom: none; /* 移除之前可能添加的下划线 */
+        padding-bottom: 0;   /* 移除之前可能添加的内边距 */
+    }
+
+    /* 第二步：同时定义左右两个符号的样式 */
+    h2::before,
+    h2::after {
+        /* 定义符号的内容 */
+        content: '✦';
+        font-size: 18px;
+        color: #D4AF37;
+        
+        /* 使用 margin 在符号和文字之间制造间距 */
+        margin: 0 15px; /* 上下间距为0，左右间距为15px */
+        
+        /* 由于使用了Flexbox，不再需要 position: absolute; 等定位代码 */
+    }
+
 </style>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
@@ -199,22 +333,27 @@
 
     <div id="result-page" class="page-container hidden">
     <h1>占卜结果</h1>
-    <div id="module-cards" class="module">
-        <h2>你抽到的牌</h2>
-        <div id="card-display-area" class="card-container">
-            </div>
+    <div id="loading-message" style="text-align: center; padding: 20px; font-size: 16px;">
+        <p>正在为你连接星辰，解读牌阵，请稍候...</p>
     </div>
+    <div id="result-modules" style="display: none;">
+        <div id="module-cards" class="module">
+            <h2>你抽到的牌</h2>
+            <div id="card-display-area" class="card-container">
+                </div>
+        </div>
 
-    <div id="module-interpretations" class="module">
-        <h2>牌面解读</h2>
-        <div id="interpretation-area">
-            </div>
-    </div>
+        <div id="module-interpretations" class="module">
+            <h2>牌面解读</h2>
+            <div id="interpretation-area">
+                </div>
+        </div>
 
-    <div id="module-summary" class="module">
-        <h2>综合分析与建议</h2>
-        <div id="summary-area">
-            </div>
+        <div id="module-summary" class="module">
+            <h2>综合分析与建议</h2>
+            <div id="summary-area">
+                </div>
+        </div>
     </div>
 
     <button id="back-btn">返回再问一次</button>
@@ -238,7 +377,7 @@
     const questionTextarea = document.getElementById('question');
     const logoutBtn = document.getElementById('logout-btn');
     // 结果页元素
-    const resultDisplay = document.getElementById('result-display');
+    /*const resultDisplay = document.getElementById('result-display'); */
     const backBtn = document.getElementById('back-btn');
 
     // --- 页面切换逻辑 ---
@@ -355,10 +494,9 @@
 // ▼▼▼ 替换旧的 performDivination 函数 ▼▼▼
 async function performDivination(userData) {
     showPage(resultPage);
-    // 清空上一次的结果，并显示加载状态
-    document.getElementById('card-display-area').innerHTML = '';
-    document.getElementById('interpretation-area').innerHTML = '<p>正在为你连接星辰，解读牌阵，请稍候...</p>';
-    document.getElementById('summary-area').innerHTML = '';
+    // 显示加载消息，隐藏结果模块
+    document.getElementById('loading-message').style.display = 'block';
+    document.getElementById('result-modules').style.display = 'none';
 
     const headers = {
         'Authorization': YOUR_ACCESS_TOKEN,
@@ -437,22 +575,41 @@ async function performDivination(userData) {
 
         // 4. 渲染模块三：综合分析与建议
         const summaryArea = document.getElementById('summary-area');
-        summaryArea.innerHTML = `
-            <div class="summary-section">
-                <h4>星盘综合提示</h4>
-                <p style="font-size: 14px; line-height: 1.6;">${finalData.summary.star_chart_analysis}</p>
-                <h4>整体分析</h4>
-                <p style="font-size: 14px; line-height: 1.6;">${finalData.summary.comprehensive_analysis}</p>
-                <h4>给你的建议</h4>
-                <p style="font-size: 14px; line-height: 1.6;">${finalData.summary.suggestions.replaceAll('\n', '<br>')}</p> 
+        if (finalData.summary) {
+            // 首先渲染分析部分
+            let summaryHtml = `
+                <div class="summary-section">
+                    <h4>星盘综合提示</h4>
+                    <p>${finalData.summary.star_chart_analysis}</p>
+                    <h4>整体分析</h4>
+                    <p>${finalData.summary.comprehensive_analysis}</p>
+                    <h4>给你的建议</h4>
+                </div>
+            `;
+
+        // 然后，遍历 suggestions 数组来创建卡片
+        const suggestionsHtml = finalData.summary.suggestions.map(sugg => `
+            <div class="suggestion-card">
+                <div class="suggestion-icon">${sugg.icon}</div>
+                <div class="suggestion-text">${sugg.advice}</div>
             </div>
-        `;
+        `).join('');
+
+        // 将分析和建议卡片组合起来
+        summaryArea.innerHTML = summaryHtml + `<div class="suggestions-container">${suggestionsHtml}</div>`;
+}
+        // 隐藏加载消息，显示结果模块
+        document.getElementById('loading-message').style.display = 'none';
+        document.getElementById('result-modules').style.display = 'block';
 
         console.log('工作流执行成功!', result);
         console.log('调试链接:', result.debug_url);
 
     } catch (error) {
         console.error('占卜时出错:', error);
+        // 隐藏加载消息，显示结果模块
+        document.getElementById('loading-message').style.display = 'none';
+        document.getElementById('result-modules').style.display = 'block';
         // 如果出错，只在解读区显示错误信息
         document.getElementById('interpretation-area').innerHTML = `<p>出现了一个错误：<br>${error.message}<br>请检查令牌和网络后重试。</p>`;
     }
